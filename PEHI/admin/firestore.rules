@@ -1,0 +1,61 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isHospitalStaff(hospitalId) {
+      return isAuthenticated() && (
+        request.auth.token.hospitalId == hospitalId ||
+        request.auth.token.admin == true
+      );
+    }
+
+    function isHospitalAdmin(hospitalId) {
+      return isAuthenticated() && (
+        (request.auth.token.hospitalId == hospitalId && request.auth.token.role == 'ADMIN') ||
+        request.auth.token.admin == true
+      );
+    }
+
+    // Feedback Collection: Multi-tenant hospital reviews
+    match /feedback/{feedbackId} {
+      // Patients / public can submit new feedback with valid responses & hospitalId
+      allow create: if request.resource.data.hospitalId is string
+                    && request.resource.data.hospitalId.size() > 0
+                    && request.resource.data.responses is map;
+
+      // Hospital staff can only read feedback assigned to their authorized hospitalId
+      allow read: if isAuthenticated() && (
+        resource.data.hospitalId == request.auth.token.hospitalId ||
+        request.auth.token.admin == true
+      );
+
+      // Hospital managers and admins can update review workflow status (marking/resolving)
+      allow update: if isAuthenticated() && (
+        resource.data.hospitalId == request.auth.token.hospitalId ||
+        request.auth.token.admin == true
+      ) && request.resource.data.hospitalId == resource.data.hospitalId;
+
+      // Only hospital admins can delete patient review records
+      allow delete: if isAuthenticated() && (
+        (resource.data.hospitalId == request.auth.token.hospitalId && request.auth.token.role == 'ADMIN') ||
+        request.auth.token.admin == true
+      );
+    }
+
+    // Hospital profile / settings (read-only for staff, write for admin)
+    match /hospitals/{hospitalId} {
+      allow read: if isAuthenticated();
+      allow write: if isHospitalAdmin(hospitalId);
+    }
+
+    // Default deny all other collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

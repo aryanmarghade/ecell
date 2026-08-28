@@ -1,0 +1,6 @@
+{
+  "name": "PEHI — Patient Experience & Happiness Index",
+  "description": "Patient Feedback Portal for measuring patient satisfaction and experience across healthcare dimensions.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

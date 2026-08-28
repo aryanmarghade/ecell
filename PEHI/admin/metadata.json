@@ -1,0 +1,6 @@
+{
+  "name": "PEHI — Hospital Management & Happiness Dashboard",
+  "description": "Enterprise healthcare management analytics dashboard for Patient Experience & Happiness Index (PEHI), real-time Firestore analytics, reviews, alerts, and executive reporting.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
